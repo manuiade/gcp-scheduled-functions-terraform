@@ -44,3 +44,9 @@ terraform plan -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID" -out plan.out
 terraform apply plan.out
 cd ..
 ```
+
+Clean
+
+```
+terraform destroy -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID"
+```
