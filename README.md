@@ -48,5 +48,6 @@ cd ..
 Clean
 
 ```
+cd examples
 terraform destroy -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID"
 ```
