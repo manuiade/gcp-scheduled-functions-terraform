@@ -24,6 +24,7 @@ variable "custom_role" {
     title       = optional(string)
     permissions = list(string)
   })
+  default = null
 }
 
 variable "source_code_bucket" {

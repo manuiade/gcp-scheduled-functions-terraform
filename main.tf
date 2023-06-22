@@ -17,6 +17,7 @@ resource "google_service_account" "schedule_sa" {
 
 // Custom role with minimum permission required
 resource "google_project_iam_custom_role" "schedule_custom_role" {
+  count       = var.custom_role != null ? 1 : 0
   role_id     = var.custom_role.role_id
   title       = var.custom_role.title != null ? var.custom_role.title : var.custom_role.role_id
   permissions = var.custom_role.permissions
@@ -25,8 +26,9 @@ resource "google_project_iam_custom_role" "schedule_custom_role" {
 
 // IAM custom role assigned to service account
 resource "google_project_iam_member" "schedule_custom_role_sa_iam" {
+  count   = var.custom_role != null ? 1 : 0
   project = var.project_id
-  role    = google_project_iam_custom_role.schedule_custom_role.id
+  role    = google_project_iam_custom_role.schedule_custom_role[0].id
   member  = format("serviceAccount:%s", google_service_account.schedule_sa.email)
 }
 
