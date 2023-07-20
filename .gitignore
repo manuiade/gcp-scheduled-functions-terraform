@@ -1,3 +1,3 @@
-examples/.terraform*
-examples/terraform.tfstate*
-examples/plan.out
+examples/*/.terraform*
+examples/*/terraform.tfstate*
+examples/*/plan.out

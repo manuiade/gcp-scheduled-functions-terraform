@@ -1,0 +1,3 @@
+google-cloud-batch
+google-api-python-client
+google-cloud-logging

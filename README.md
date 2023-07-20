@@ -17,11 +17,11 @@ Simple module for creating with Terraform the following flow on GCP:
 BUCKET=<YOUR_BUCKET_TO_CREATE>
 PROJECT_ID=<YOUR_GCP_PROJECT>
 
-cd examples
+cd examples/hello-world
 terraform init
 terraform plan -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID" -out plan.out
 terraform apply plan.out
-cd ..
+cd ../../
 ```
 
 If you change the source code just recreate the zip archive:
@@ -39,15 +39,16 @@ cd ../../
 And relaunch Terraform to upload the new zip code and redeploy the function:
 
 ```
-cd examples
+cd examples/hello-world
 terraform plan -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID" -out plan.out
 terraform apply plan.out
-cd ..
+cd ../../
 ```
 
 Clean
 
 ```
-cd examples
+cd examples/hello-world
 terraform destroy -var "bucket=$BUCKET" -var "project_id=$PROJECT_ID"
+cd ../../
 ```

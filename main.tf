@@ -15,6 +15,12 @@ resource "google_service_account" "schedule_sa" {
   project      = var.project_id
 }
 
+resource "google_service_account_iam_member" "user" {
+  service_account_id = google_service_account.schedule_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.schedule_sa.email}"
+}
+
 // Custom role with minimum permission required
 resource "google_project_iam_custom_role" "schedule_custom_role" {
   count       = var.custom_role != null ? 1 : 0
@@ -44,10 +50,17 @@ resource "google_storage_bucket" "source_code_bucket" {
 
 // Upload source code to GCS bucket
 resource "google_storage_bucket_object" "source_code_bucket" {
-  for_each = var.functions
+  for_each = var.source_code_bucket.files
   bucket   = google_storage_bucket.source_code_bucket.name
-  name     = each.value.zip_name
-  source   = each.value.zip_source
+  name     = each.key
+  source   = each.value
+}
+
+// Assign Object Admin to use source code bucket
+resource "google_storage_bucket_iam_member" "source_code_bucket_admin" {
+  bucket = google_storage_bucket.source_code_bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = format("serviceAccount:%s", google_service_account.schedule_sa.email)
 }
 
 // Create secret manager vaults for storing secrets accessed by functions
@@ -86,7 +99,7 @@ resource "google_cloudfunctions_function" "schedule_function" {
   runtime               = each.value.runtime
   service_account_email = google_service_account.schedule_sa.email
   source_archive_bucket = google_storage_bucket.source_code_bucket.name
-  source_archive_object = google_storage_bucket_object.source_code_bucket["${each.key}"].name
+  source_archive_object = google_storage_bucket_object.source_code_bucket["${each.value.source_code}"].name
   timeout               = 540
   trigger_http          = true
   available_memory_mb   = try(each.value.available_memory_mb, 128)
@@ -107,7 +120,7 @@ resource "google_cloudfunctions_function" "schedule_function" {
 
   lifecycle {
     replace_triggered_by = [
-      google_storage_bucket_object.source_code_bucket[each.key].md5hash
+      google_storage_bucket_object.source_code_bucket
     ]
   }
 
@@ -121,6 +134,12 @@ resource "google_cloudfunctions_function_iam_member" "schedule_function_invoke" 
   cloud_function = google_cloudfunctions_function.schedule_function["${each.key}"].name
   role           = "roles/cloudfunctions.invoker"
   member         = format("serviceAccount:%s", google_service_account.schedule_sa.email)
+
+  lifecycle {
+    replace_triggered_by = [
+      google_storage_bucket_object.source_code_bucket
+    ]
+  }
 }
 
 // Creates/update the Cloud Scheduler Job which periodically calls the Function for the certificate rotation
@@ -137,5 +156,11 @@ resource "google_cloud_scheduler_job" "schedule_job" {
     oidc_token {
       service_account_email = google_service_account.schedule_sa.email
     }
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      google_storage_bucket_object.source_code_bucket
+    ]
   }
 }

@@ -1,5 +1,5 @@
 module "schedule_backup" {
-  source = "../"
+  source = "../../"
 
   project_id = var.project_id
 
@@ -9,7 +9,7 @@ module "schedule_backup" {
   }
 
   custom_role = {
-    role_id = "test_role2"
+    role_id = "test_role3"
     permissions = [
       "compute.instances.list",
     ]
@@ -18,7 +18,10 @@ module "schedule_backup" {
   source_code_bucket = {
     name     = var.bucket
     location = "EU"
-
+    files = {
+      "source-codes/code-1.zip" = "${path.module}/../../source-codes/code-1/code-1.zip",
+      "source-codes/code-2.zip" = "${path.module}/../../source-codes/code-2/code-2.zip"
+    }
   }
 
   functions = {
@@ -30,8 +33,7 @@ module "schedule_backup" {
       environment_variables = {
         KEY = "value-1"
       }
-      zip_name   = "source-codes/code-1.zip"
-      zip_source = "${path.module}/../source-codes/code-1/code-1.zip"
+      source_code = "source-codes/code-1.zip"
       scheduler = {
         schedule    = "*/5 * * * *"
         time_zone   = "Europe/Rome"
@@ -50,8 +52,7 @@ module "schedule_backup" {
         "_SECRET_1" = "secret-1"
         "_SECRET_2" = "secret-2"
       }
-      zip_name   = "source-codes/code-2.zip"
-      zip_source = "${path.module}/../source-codes/code-2/code-2.zip"
+      source_code = "source-codes/code-2.zip"
       scheduler = {
         schedule    = "*/5 * * * *"
         time_zone   = "Europe/Rome"

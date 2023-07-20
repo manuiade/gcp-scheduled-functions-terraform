@@ -32,6 +32,7 @@ variable "source_code_bucket" {
   type = object({
     name     = string
     location = string
+    files    = map(string)
   })
 }
 
@@ -43,8 +44,7 @@ variable "functions" {
     available_memory_mb   = optional(number, 128)
     entry_point           = string
     environment_variables = optional(map(string), {})
-    zip_name              = string
-    zip_source            = string
+    source_code           = string
     secrets               = optional(map(string), {})
     scheduler = object({
       schedule    = string
